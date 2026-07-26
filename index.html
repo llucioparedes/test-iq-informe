@@ -533,7 +533,7 @@ const RETARDO_AVANCE = 600;
 
 /* Enlace de pago de Hotmart. Vacío = el botón avisa de que falta.
    ⚠️ El `?off=` fija el precio; sin él Hotmart cobra el precio base. */
-const URL_CHECKOUT = '';
+const URL_CHECKOUT = 'https://pay.hotmart.com/G1068884863O?off=f9rtv690';
 
 /* Clave para revisar el informe sin pagar (ver el arranque, al final) */
 const CLAVE_REVISION = 'mente2026';
@@ -1243,7 +1243,7 @@ function pantallaPuente(){
     if(URL_CHECKOUT){
       window.location.href = URL_CHECKOUT;
     } else {
-      window.location.href = 'informe.html';   // sin checkout: va directo al informe (para probar)
+      window.location.href = 'informe.html';
     }
   };
   document.querySelector('#reiniciar').onclick = () => {
