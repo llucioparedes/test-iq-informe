@@ -534,7 +534,6 @@ const RETARDO_AVANCE = 600;
 /* Enlace de pago de Hotmart. Vacío = el botón avisa de que falta.
    ⚠️ El `?off=` fija el precio; sin él Hotmart cobra el precio base. */
 const URL_CHECKOUT = 'https://pay.hotmart.com/G1068884863O?off=f9rtv690&checkoutMode=10';
-const SUPABASE_FN = 'https://fvphedbwxkfjuitgsigf.supabase.co/functions/v1';
 
 /* Clave para revisar el informe sin pagar (ver el arranque, al final) */
 const CLAVE_REVISION = 'mente2026';
@@ -1235,47 +1234,16 @@ function pantallaPuente(){
         ${incluye.map(t => `<div class="item"><span class="tick">✓</span>${t}</div>`).join('')}
       </div>
 
-      <div style="margin:1.1rem 0 .3rem;text-align:left">
-        <label for="email-informe" style="display:block;font-weight:600;color:var(--jade-osc);margin-bottom:.4rem">¿A qué correo te enviamos tu informe?</label>
-        <input type="email" id="email-informe" placeholder="tucorreo@ejemplo.com" autocomplete="email" inputmode="email"
-          style="width:100%;padding:.8rem .9rem;border:2px solid var(--jade-cl);border-radius:10px;font-size:1rem;box-sizing:border-box">
-        <p id="email-error" style="display:none;color:#c0392b;font-size:.9rem;margin:.4rem 0 0"></p>
-        <p style="font-size:.82rem;color:#666;margin:.45rem 0 0">Usa <b>este mismo correo</b> al pagar: así vinculamos tu informe con tu compra y podrás verlo desde cualquier dispositivo.</p>
-      </div>
-
       <button class="btn" id="desbloquear">🔓 Ver mis resultados</button>
       <p class="nota" style="margin-top:.8rem">Acceso inmediato a tu informe completo</p>
       <button class="link" id="reiniciar">Volver a empezar</button>
     </div>`;
 
-  document.querySelector('#desbloquear').onclick = async (ev) => {
-    const inp = document.querySelector('#email-informe');
-    const email = (inp.value || '').trim().toLowerCase();
-    const err = document.querySelector('#email-error');
-    if(!email || !email.includes('@') || !email.includes('.')){
-      err.textContent = 'Escribe un correo válido para poder enviarte tu informe.';
-      err.style.display = 'block';
-      inp.focus();
-      return;
-    }
-    err.style.display = 'none';
-    const btn = ev.currentTarget;
-    btn.disabled = true;
-    const txt = btn.textContent;
-    btn.textContent = 'Preparando tu informe…';
-    try { localStorage.setItem('emailInforme', email); } catch(e){}
-    // Guardamos el resultado ligado al email (para verlo cross-device tras el pago).
-    // Si el guardado falla, seguimos igual al pago: el respaldo es el localStorage.
-    try {
-      await fetch(SUPABASE_FN + '/guardar-resultado', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email, resultado: r })
-      });
-    } catch(e){ /* continúa al pago */ }
+  // Sin pedir email aquí (menos fricción antes de la venta). El resultado ya
+  // quedó en localStorage arriba; el informe lo pedirá una sola vez tras el pago.
+  document.querySelector('#desbloquear').onclick = () => {
     if(URL_CHECKOUT){
-      const sep = URL_CHECKOUT.includes('?') ? '&' : '?';
-      window.location.href = URL_CHECKOUT + sep + 'email=' + encodeURIComponent(email);
+      window.location.href = URL_CHECKOUT;
     } else {
       window.location.href = 'informe.html';
     }
