@@ -2206,10 +2206,22 @@ async function desbloquearPorEmail(email, auto){
       try { localStorage.setItem('emailInforme', email); } catch(e){}
       let r = data.resultado;
       if(!r || !r.completado){
-        try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado) r = g; } catch(e){}
+        // No está en el servidor: usa el resultado de ESTE navegador (donde se
+        // hizo el test) y guárdalo ligado al email, para que también aparezca
+        // desde otros dispositivos en el futuro.
+        try {
+          const g = JSON.parse(localStorage.getItem('resultadoTestIQ'));
+          if(g && g.completado){
+            r = g;
+            fetch(SUPABASE_FN + '/guardar-resultado', {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ email, resultado: g })
+            }).catch(()=>{});
+          }
+        } catch(e){}
       }
       if(r){ pantallaResultado(r); return; }
-      pantallaPedirEmail('Tu compra está confirmada, pero no encontramos tu resultado guardado. Contáctanos y lo solucionamos.');
+      pantallaPedirEmail('Tu compra está confirmada 👍. Para ver tu informe, ábrelo en el mismo navegador donde hiciste el test (ahí quedó guardado tu resultado). Una vez abierto, ya lo podrás ver desde cualquier dispositivo con este correo.');
       return;
     }
     if(data){ huboError = false; }
