@@ -537,6 +537,7 @@ const URL_CHECKOUT = '';
 
 /* Clave para revisar el informe sin pagar (ver el arranque, al final) */
 const CLAVE_REVISION = 'mente2026';
+const SUPABASE_FN = 'https://fvphedbwxkfjuitgsigf.supabase.co/functions/v1';
 
 const ir = fn => { fn(); window.scrollTo({top:0, behavior:'smooth'}); };
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -2157,12 +2158,82 @@ function arrancar(search){
 // Si la pestaña ya estaba abierta, añadir #demo o #ver=... solo cambia el
 // ancla sin recargar; este listener vuelve a arrancar para que reaccione.
 /* Informe: muestra el resultado guardado (o una demo con #demo) */
+/* Pide el email con el que se compró para desbloquear el informe */
+function pantallaPedirEmail(mensaje){
+  app.innerHTML = `<div class="card centro">
+    <div class="logo">${LOGO(78)}</div>
+    <h1>Tu informe cognitivo</h1>
+    <p>Escribe el <b>correo que usaste al comprar</b> para desbloquear tu informe.</p>
+    <div style="margin:1rem 0 .3rem;text-align:left">
+      <input type="email" id="email-ver" placeholder="tucorreo@ejemplo.com" autocomplete="email" inputmode="email"
+        style="width:100%;padding:.8rem .9rem;border:2px solid var(--jade-cl);border-radius:10px;font-size:1rem;box-sizing:border-box">
+      <p id="email-msg" style="${mensaje?'':'display:none;'}color:#c0392b;font-size:.9rem;margin:.4rem 0 0">${mensaje||''}</p>
+    </div>
+    <button class="btn" id="ver">Ver mi informe</button></div>`;
+  const inp = document.querySelector('#email-ver');
+  try { const g = localStorage.getItem('emailInforme'); if(g) inp.value = g; } catch(e){}
+  document.querySelector('#ver').onclick = () => {
+    const email = (inp.value||'').trim().toLowerCase();
+    const msg = document.querySelector('#email-msg');
+    if(!email || !email.includes('@') || !email.includes('.')){
+      msg.textContent = 'Escribe un correo válido.'; msg.style.display='block'; inp.focus(); return;
+    }
+    desbloquearPorEmail(email, false);
+  };
+}
+
+/* Verifica el pago en Supabase y, si pagó, muestra el informe */
+async function desbloquearPorEmail(email, auto){
+  app.innerHTML = `<div class="card centro"><div class="logo">${LOGO(78)}</div>
+    <h1>Verificando tu compra…</h1><p>Un momento, estamos preparando tu informe.</p></div>`;
+  let data = null;
+  try {
+    const res = await fetch(SUPABASE_FN + '/verificar', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email })
+    });
+    data = await res.json();
+  } catch(e){ data = null; }
+
+  if(data && data.pagado){
+    try { localStorage.setItem('emailInforme', email); } catch(e){}
+    let r = data.resultado;
+    if(!r || !r.completado){
+      try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado) r = g; } catch(e){}
+    }
+    if(r){ pantallaResultado(r); return; }
+    pantallaPedirEmail('Tu compra está confirmada, pero no encontramos tu resultado guardado. Contáctanos y lo solucionamos.');
+    return;
+  }
+  if(!data){
+    pantallaPedirEmail('No pudimos conectar. Revisa tu internet e inténtalo de nuevo.');
+    return;
+  }
+  // Pagó = false: si fue intento automático, no asustar con un error
+  pantallaPedirEmail(auto ? '' : 'No encontramos una compra con ese correo. Asegúrate de usar el mismo correo con el que pagaste.');
+}
+
 function iniInforme(){
   const hash=(location.hash||'').replace(/^#/,'');
   if(hash==='demo'){ pantallaResultado(resultadoDemo()); return; }
-  let g=null; try{ g=JSON.parse(localStorage.getItem('resultadoTestIQ')); }catch(e){}
-  if(g && g.completado){ pantallaResultado(g); }
-  else { app.innerHTML = `<div class="card centro"><div class="logo">${LOGO(78)}</div><h1>Aún no hay resultados</h1><p>Primero completa el test; aquí verás tu informe.</p></div>`; }
+
+  // Puerta de revisión interna: ?ver=resultados&clave=... (o #ver=...&clave=...)
+  const params = new URLSearchParams(location.search||'');
+  const hp = new URLSearchParams(hash.includes('=') ? hash : '');
+  const conClave = (params.get('ver')==='resultados' && params.get('clave')===CLAVE_REVISION)
+                || (hp.get('ver')==='resultados' && hp.get('clave')===CLAVE_REVISION);
+  if(conClave){
+    let g=null; try{ g=JSON.parse(localStorage.getItem('resultadoTestIQ')); }catch(e){}
+    if(g && g.completado){ pantallaResultado(g); return; }
+  }
+
+  // email: de la URL (?email=) o del navegador (mismo dispositivo)
+  let email = params.get('email') || '';
+  try { if(!email) email = localStorage.getItem('emailInforme') || ''; } catch(e){}
+  email = (email||'').trim().toLowerCase();
+
+  if(email){ desbloquearPorEmail(email, true); }
+  else { pantallaPedirEmail(); }
 }
 window.addEventListener('hashchange', iniInforme);
 iniInforme();
