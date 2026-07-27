@@ -2182,34 +2182,48 @@ function pantallaPedirEmail(mensaje){
   };
 }
 
-/* Verifica el pago en Supabase y, si pagó, muestra el informe */
+/* Verifica el pago en Supabase y, si pagó, muestra el informe.
+   En modo automático (recién pagó) reintenta varios segundos, porque el
+   aviso de Hotmart puede tardar unos instantes en llegar a Supabase. */
 async function desbloquearPorEmail(email, auto){
-  app.innerHTML = `<div class="card centro"><div class="logo">${LOGO(78)}</div>
-    <h1>Verificando tu compra…</h1><p>Un momento, estamos preparando tu informe.</p></div>`;
-  let data = null;
-  try {
-    const res = await fetch(SUPABASE_FN + '/verificar', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ email })
-    });
-    data = await res.json();
-  } catch(e){ data = null; }
+  const cargando = (msg) => { app.innerHTML = `<div class="card centro"><div class="logo">${LOGO(78)}</div>
+    <h1>Verificando tu compra…</h1><p>${msg||'Un momento, estamos preparando tu informe.'}</p></div>`; };
+  cargando();
 
-  if(data && data.pagado){
-    try { localStorage.setItem('emailInforme', email); } catch(e){}
-    let r = data.resultado;
-    if(!r || !r.completado){
-      try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado) r = g; } catch(e){}
+  const intentos = auto ? 7 : 1;     // ~7 intentos × 3s ≈ 20s de margen para el webhook
+  let huboError = false;
+  for(let i=0; i<intentos; i++){
+    let data = null;
+    try {
+      const res = await fetch(SUPABASE_FN + '/verificar', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      });
+      data = await res.json();
+    } catch(e){ data = null; huboError = true; }
+
+    if(data && data.pagado){
+      try { localStorage.setItem('emailInforme', email); } catch(e){}
+      let r = data.resultado;
+      if(!r || !r.completado){
+        try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado) r = g; } catch(e){}
+      }
+      if(r){ pantallaResultado(r); return; }
+      pantallaPedirEmail('Tu compra está confirmada, pero no encontramos tu resultado guardado. Contáctanos y lo solucionamos.');
+      return;
     }
-    if(r){ pantallaResultado(r); return; }
-    pantallaPedirEmail('Tu compra está confirmada, pero no encontramos tu resultado guardado. Contáctanos y lo solucionamos.');
-    return;
+    if(data){ huboError = false; }
+    // Aún no confirmado: si quedan intentos, esperar y reintentar
+    if(i < intentos - 1){
+      cargando('Confirmando tu compra, puede tardar unos segundos…');
+      await new Promise(r => setTimeout(r, 3000));
+    }
   }
-  if(!data){
+  if(huboError){
     pantallaPedirEmail('No pudimos conectar. Revisa tu internet e inténtalo de nuevo.');
     return;
   }
-  // Pagó = false: si fue intento automático, no asustar con un error
+  // Pagó = false tras los reintentos: si fue automático, no asustar con un error
   pantallaPedirEmail(auto ? '' : 'No encontramos una compra con ese correo. Asegúrate de usar el mismo correo con el que pagaste.');
 }
 
