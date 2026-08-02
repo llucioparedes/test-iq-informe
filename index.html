@@ -1238,21 +1238,44 @@ function pantallaPuente(){
     'Recomendaciones concretas para cada dimensión'
   ];
 
+  // Anticipo (teaser): el índice se muestra desenfocado y bajo candado para
+  // crear deseo sin revelar las métricas de pago; solo se adelanta, de forma
+  // cualitativa, cuál fue el área más fuerte. El precio y el destino de pago
+  // se declaran AQUÍ, antes de ir a Hotmart, para que el clic sea consciente.
+  const fuerte = r.fortalezaPrincipal;
+
   app.innerHTML = `
     <div class="card centro">
       <div class="marca">✓</div>
       <h1>¡Tu test está listo!</h1>
-      <p>Hemos calculado tu <b style="color:var(--jade-osc)">índice cognitivo</b> y preparado un
-         <b style="color:var(--jade-osc)">informe completo</b> con tu puntuación, tu percentil
-         y el análisis de tus fortalezas cognitivas.</p>
+
+      <div style="margin:1.1rem auto 1.2rem;max-width:340px;padding:1.1rem 1rem;
+           border:1px solid rgba(14,138,104,.25);border-radius:18px;
+           background:linear-gradient(160deg,rgba(14,138,104,.10),rgba(14,138,104,.02))">
+        <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;opacity:.65;margin-bottom:.15rem">Tu índice cognitivo</div>
+        <div style="font-size:3.4rem;font-weight:800;line-height:1;color:var(--jade-osc);display:flex;align-items:center;justify-content:center;gap:.4rem">
+          <span style="filter:blur(11px);user-select:none;pointer-events:none">${r.indice}</span>
+          <span style="filter:none;font-size:1.6rem">🔒</span>
+        </div>
+        <div style="margin-top:.6rem;font-size:.95rem">Tu área más fuerte es <b style="color:var(--jade-osc)">${fuerte}</b> 💪</div>
+      </div>
+
+      <p>Desbloquea tu <b style="color:var(--jade-osc)">informe completo</b> para ver tu
+         <b>índice exacto</b>, tu <b>percentil</b> y el análisis de tus
+         <b>cinco dimensiones cognitivas</b>.</p>
 
       <div class="incluye">
         <p class="titulo">Tu informe incluye:</p>
         ${incluye.map(t => `<div class="item"><span class="tick">✓</span>${t}</div>`).join('')}
       </div>
 
-      <button class="btn" id="desbloquear">🔓 Ver mis resultados</button>
-      <p class="nota" style="margin-top:.8rem">Acceso inmediato a tu informe completo</p>
+      <div style="margin:1rem 0 .35rem;font-size:1.05rem">
+        Desbloquéalo por
+        <b style="color:var(--jade-osc);font-size:1.3rem">$9</b>
+        <span style="opacity:.7">· acceso inmediato y de por vida</span>
+      </div>
+      <button class="btn" id="desbloquear">🔓 Desbloquear mi informe · $9</button>
+      <p class="nota" style="margin-top:.7rem">🔒 Pago 100% seguro vía Hotmart · Garantía de 7 días</p>
       <button class="link" id="reiniciar">Volver a empezar</button>
     </div>`;
 
