@@ -1100,7 +1100,7 @@ function pantallaCaratula(){
   app.innerHTML = `
     <div class="card centro">
       <div class="logo">${LOGO(96)}</div>
-      <div class="pill">⏱️ 40 preguntas · ~5 minutos</div>
+      <div class="pill">⏱️ 40 preguntas · ~5 min · Gratis</div>
       <h1 class="destacado">Evaluación cognitiva para medir tu inteligencia</h1>
       <p>Esta evaluación explora cinco áreas del razonamiento mediante 40 preguntas.</p>
       <div class="areas">
@@ -1115,6 +1115,7 @@ function pantallaCaratula(){
       <p style="font-size:.85rem;margin-top:.7rem">Los 40 ejercicios suben de dificultad en <b>cuatro tramos</b>,
       y no todos los aciertos valen lo mismo: los últimos pesan <b>dos veces y media</b> más que los primeros.
       Elige una respuesta por pregunta. No hay límite de tiempo.</p>
+      <p style="font-size:.9rem;margin-top:.9rem;color:var(--jade-osc)">✅ <b>Gratis y sin registro.</b> Al terminar ves <b>al instante</b> tu coeficiente, tu percentil y tus fortalezas.</p>
       <button class="btn" id="empezar">Comenzar la evaluación</button>
     </div>`;
   document.querySelector('#empezar').onclick = () => ir(pantallaGenero);
