@@ -109,8 +109,10 @@
 ========================================================================= */
 const SUPABASE_FN = 'https://fvphedbwxkfjuitgsigf.supabase.co/functions/v1';
 const CLAVE_REVISION = 'mente2026';
-/* 👇 PEGA AQUÍ el link de checkout del Informe Completo ($8) cuando lo crees en Hotmart */
-const URL_INFORME = '';
+/* 👇 Checkout del Informe Completo ($8 + order bump $4). Es el mismo producto
+   que ya usaba el test (G1068884863O). Si creas una OFERTA NUEVA a $8 en Hotmart,
+   el código '?off=' cambia y hay que actualizar este link. */
+const URL_INFORME = 'https://pay.hotmart.com/G1068884863O?off=f9rtv690&checkoutMode=10';
 const app = document.getElementById('app');
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtPct = p => Math.round(p);
@@ -475,6 +477,10 @@ async function desbloquearPorEmail(email, auto){
   if(conClave){
     try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado){ pantallaResultado(g); return; } } catch(e){}
   }
+  /* MODELO B: el test es gratis. Si hay un resultado local (recién hecho el test
+     en este navegador) se muestra GRATIS de inmediato. La verificación por email
+     queda de respaldo para quien vuelva desde otro dispositivo. */
+  try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado){ pantallaResultado(g); return; } } catch(e){}
   if(emailURL){ desbloquearPorEmail(emailURL, true); return; }
   let saved = null;
   try { saved = localStorage.getItem('emailInforme'); } catch(e){}
