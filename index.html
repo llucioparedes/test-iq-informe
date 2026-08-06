@@ -1230,6 +1230,18 @@ function pantallaPuente(){
   const r = calcularResultado();
   try { localStorage.setItem('resultadoTestIQ', JSON.stringify(r)); } catch(e){}
 
+  /* MODELO B: el test es GRATIS. Guardamos el resultado y llevamos directo al
+     resultado express (resultado.html), que lo muestra sin pago y ofrece el
+     informe completo ($8). El bloque de paywall de abajo queda deshabilitado
+     por el 'return' (se conserva como referencia). */
+  app.innerHTML = `<div class="card centro"><div class="marca">✓</div>
+    <h1>¡Tu resultado está listo!</h1>
+    <p>Preparando tu resultado express…</p>
+    <p class="nota" style="margin-top:.8rem">Si no avanza solo,
+      <a href="resultado.html" style="color:var(--jade-osc);font-weight:700">toca aquí →</a></p></div>`;
+  setTimeout(function(){ window.location.href = 'resultado.html'; }, 700);
+  return;
+
   const incluye = [
     'Tu índice cognitivo exacto',
     'Tu percentil frente a la población',
