@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu resultado cognitivo</title>
+<style>
+  :root{
+    --jade:#0E8A68; --jade-osc:#0A5B46; --jade-cl:#E2F2EC;
+    --dorado:#C9A227; --dorado-osc:#8F6F12; --dorado-cl:#FAF2D9;
+    --tinta:#1F2937; --gris:#6B7280; --gris-cl:#9CA3AF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:linear-gradient(135deg,#F4FBF8 0%,#E2F2EC 50%,#C9E7DC 100%);
+    background-attachment:fixed; color:var(--tinta); min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+  .card{background:#fff;border-radius:24px;padding:2.4rem 2rem;max-width:560px;width:100%;
+    box-shadow:0 20px 60px rgba(14,138,104,.15)}
+  .card.centro{text-align:center}
+  h1{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;line-height:1.22;margin-bottom:.5rem}
+  h1.j{color:var(--jade)}
+  p{color:var(--gris);line-height:1.6}
+  .logo{display:flex;justify-content:center;margin-bottom:.7rem}
+  .logo svg{display:block}
+  .coef{background:var(--jade-osc);border-radius:18px;padding:1.6rem 1rem;color:#fff;margin:1.3rem 0 1rem}
+  .coef .lbl{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:#BFE6D8;font-weight:700}
+  .coef .num{font-size:3.6rem;font-weight:800;line-height:1;margin:.2rem 0}
+  .coef .pill{display:inline-block;background:var(--dorado);color:var(--jade-osc);font-weight:800;
+    padding:.35rem .9rem;border-radius:999px;font-size:1rem;margin-top:.3rem}
+  .num-int{background:var(--jade-cl);border-radius:14px;padding:1rem;margin:0 0 1.1rem;
+    font-size:.92rem;color:#4B5563;line-height:1.5}
+  .num-int b{color:var(--jade-osc)}
+  .campana{margin:.4rem 0 .6rem}
+  .campana svg{width:100%;height:auto;max-width:340px}
+  .cap{font-size:.95rem;color:var(--jade-osc);font-weight:700;margin-bottom:.6rem}
+  .cap b{color:var(--jade-osc)}
+  .perc-det{text-align:left;background:var(--jade-cl);border-radius:14px;padding:1rem 1.1rem;
+    margin-bottom:1.4rem;font-size:.9rem;color:#4B5563;line-height:1.55}
+  .perc-det b{color:var(--jade-osc)}
+  /* Secciones de texto */
+  .sec{text-align:left;background:var(--jade-cl);border-radius:14px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+  .sec-tit{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--jade-osc);
+    font-weight:800;margin-bottom:.6rem}
+  .lista{list-style:none;padding:0;margin:0}
+  .lista li{position:relative;padding-left:1.3rem;color:#4B5563;font-size:.9rem;line-height:1.5;margin-bottom:.5rem}
+  .lista li:last-child{margin-bottom:0}
+  .lista li::before{content:'›';position:absolute;left:.2rem;top:-.05rem;color:var(--jade);font-weight:800}
+  .lista li b{color:var(--jade-osc)}
+  /* Título fortalezas */
+  .fort-tit{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dorado-osc);
+    font-weight:800;margin:1.6rem 0 .9rem}
+  .fort{text-align:left;border:1px solid var(--dorado);background:var(--dorado-cl);
+    border-radius:14px;padding:1.1rem 1.2rem;margin-bottom:.85rem}
+  .fort .f-head{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-bottom:.6rem}
+  .fort .f-head .ic{font-size:1.5rem;line-height:1}
+  .fort .f-head .nom{font-weight:800;color:var(--tinta);font-size:1.02rem;flex:1;min-width:0}
+  .fort .f-head .pct{font-size:.76rem;font-weight:700;color:var(--jade-osc);
+    background:#fff;border:1px solid var(--jade-cl);border-radius:999px;padding:.12rem .55rem}
+  .fort .f-row{color:#4B5563;font-size:.89rem;line-height:1.5;margin-top:.4rem}
+  .fort .f-row b{color:var(--dorado-osc)}
+  /* Spotlight fortaleza #1 */
+  .spot{text-align:left;border-left:4px solid var(--dorado);background:#fff;
+    box-shadow:0 6px 20px rgba(201,162,39,.12);border-radius:12px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+  .spot-tit{font-weight:800;color:var(--dorado-osc);font-size:.95rem;margin-bottom:.4rem}
+  .spot p{color:#4B5563;font-size:.92rem;line-height:1.55}
+  .spot p b{color:var(--tinta)}
+  .teaser{background:var(--dorado-cl);border:1px dashed var(--dorado);border-radius:14px;
+    padding:1rem 1.1rem;margin-top:1.5rem;text-align:left;font-size:.9rem;color:#5b4d10;line-height:1.5}
+  .teaser b{color:var(--dorado-osc)}
+  .nota-inf{text-align:left;font-size:.85rem;color:var(--jade-osc);background:var(--jade-cl);
+    border-radius:10px;padding:.6rem .8rem;margin:.5rem 0 0;line-height:1.45}
+  .nota-inf b{color:var(--jade-osc)}
+  /* CTA de cierre → informe $8 */
+  .cta{background:linear-gradient(135deg,var(--jade-osc),var(--jade));border-radius:18px;
+    padding:1.5rem 1.4rem;margin-top:1.7rem;text-align:left;color:#fff}
+  .cta-tit{font-weight:800;font-size:1.12rem;margin-bottom:.5rem;line-height:1.3}
+  .cta-p{color:#DDF0E9;font-size:.9rem;line-height:1.5}
+  .cta-p b{color:#fff}
+  .cta-lista{list-style:none;padding:0;margin:.6rem 0}
+  .cta-lista li{color:#fff;font-size:.92rem;font-weight:600;padding:.3rem 0;
+    border-bottom:1px solid rgba(255,255,255,.12)}
+  .cta-lista li:last-child{border-bottom:none}
+  .cta-precio{margin:1rem 0 .3rem;font-size:1.25rem;color:#fff}
+  .cta-precio .antes{color:#BFE6D8;text-decoration:line-through;font-size:.9rem;margin-right:.45rem}
+  .cta-precio b{color:var(--dorado)}
+  .btn.oro{background:var(--dorado);color:var(--jade-osc);text-decoration:none}
+  .btn{display:block;width:100%;background:var(--jade);color:#fff;border:none;border-radius:999px;
+    padding:1rem;font-size:1.05rem;font-weight:800;cursor:pointer;margin-top:1rem}
+  .btn:disabled{opacity:.6;cursor:default}
+  .inp{width:100%;padding:.9rem 1rem;border:1.5px solid var(--jade-cl);border-radius:12px;
+    font-size:1rem;font-family:inherit}
+  .msg{color:#B91C1C;font-size:.85rem;margin-top:.5rem;display:none}
+  .nota{font-size:.82rem;color:var(--gris-cl);margin-top:.8rem}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =========================================================================
+   TRIPWIRE ($1) — resultado.html · versión robusta
+   Secciones: logo · coeficiente + percentil + campana + interpretación ·
+   "qué significa (y qué no)" · 3 fortalezas ricas (qué es / cómo se nota /
+   dónde te da ventaja) · fortaleza #1 en acción · cómo aprovecharlas.
+   Reutiliza el candado (/verificar) y el resultado guardado del informe.
+========================================================================= */
+const SUPABASE_FN = 'https://fvphedbwxkfjuitgsigf.supabase.co/functions/v1';
+const CLAVE_REVISION = 'mente2026';
+/* 👇 PEGA AQUÍ el link de checkout del Informe Completo ($8) cuando lo crees en Hotmart */
+const URL_INFORME = '';
+const app = document.getElementById('app');
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtPct = p => Math.round(p);
+
+const ORDEN_OFICIAL = [
+  'Razonamiento Abstracto','Razonamiento Lógico','Reconocimiento de Patrones',
+  'Razonamiento Cuantitativo','Visualización Espacial'
+];
+const ICONO = {
+  'Razonamiento Abstracto':'🧠','Razonamiento Lógico':'🧩','Reconocimiento de Patrones':'🔍',
+  'Razonamiento Cuantitativo':'🔢','Visualización Espacial':'📐'
+};
+/* Contenido a fondo por fortaleza. El análisis profundo de las 5 áreas,
+   los puntos ciegos y el PDF quedan para el informe. */
+const FORT = {
+  'Razonamiento Abstracto':{
+    que:'detectar reglas y relaciones nuevas sin que nadie te las explique.',
+    notas:'Cuando te sueltan en algo sin manual, no te bloqueas: pruebas, observas y deduces cómo funciona por tu cuenta.',
+    ventaja:'aprender herramientas y temas nuevos rápido, entender sistemas complejos y adaptarte cuando cambian las reglas.',
+    accion:'Te dan una app o un proceso que nunca viste y, en minutos, ya entendiste su lógica mientras otros siguen buscando el tutorial.',
+    tip:'Ponte a propósito frente a problemas sin instrucciones: es donde tu mente rinde más.'
+  },
+  'Razonamiento Lógico':{
+    que:'encadenar deducciones de varios pasos sin perder el hilo ni caer en la respuesta obvia.',
+    notas:'Antes de opinar, separas los hechos del relato y verificas; te cuesta tragarte una conclusión sin revisarla.',
+    ventaja:'decidir bajo presión, detectar argumentos tramposos y no dejarte manipular por una buena historia.',
+    accion:'En una discusión donde todos se dejan llevar por la emoción, tú eres quien detecta el salto lógico que nadie vio.',
+    tip:'Cuando algo te convenza demasiado rápido, busca el paso que falta: ahí brillas.'
+  },
+  'Reconocimiento de Patrones':{
+    que:'ver la regularidad que se repite antes que los demás.',
+    notas:'Notas coincidencias, ciclos y "esto ya lo vi" que a otros se les escapan.',
+    ventaja:'anticipar lo que viene, encontrar la causa detrás de los síntomas y aprender de la experiencia más rápido.',
+    accion:'Ves tres datos sueltos que nadie había conectado y, de golpe, entiendes qué está pasando realmente.',
+    tip:'Confía en ese "algo se repite aquí": suele ser tu patrón detectándose antes que tu razón.'
+  },
+  'Razonamiento Cuantitativo':{
+    que:'manejar números, proporciones y relaciones matemáticas con soltura.',
+    notas:'Traduces un problema a cantidades sin asustarte y le pierdes el miedo a los datos.',
+    ventaja:'manejar dinero, evaluar riesgos, interpretar datos y no dejarte engañar por estadísticas mal presentadas.',
+    accion:'Alguien te muestra un "descuento" y tú, de cabeza, ya calculaste que en realidad no conviene.',
+    tip:'Cuando te den cifras, hazlas tuyas: convertir todo a números es tu superpoder.'
+  },
+  'Visualización Espacial':{
+    que:'girar, doblar y transformar figuras en tu mente con precisión.',
+    notas:'Puedes "ver" cómo encaja algo, cómo se arma o cómo se vería desde otro ángulo sin dibujarlo.',
+    ventaja:'orientarte, imaginar objetos en 3D, diseñar y resolver problemas donde la forma y el espacio importan.',
+    accion:'Antes de mover un mueble o armar algo, ya lo resolviste en tu cabeza y sabes que va a entrar.',
+    tip:'Apóyate en dibujos y modelos mentales: pensar "en imágenes" es tu ventaja.'
+  }
+};
+
+/* ---- LOGO real de Mente Libre (de informe.html) ---- */
+function redNeuronal(){
+  const N = {
+    p1:[24,57], p2:[28,44], p3:[40,34], p4:[56,29], p5:[73,30], p6:[88,38],
+    p7:[95,50], p8:[90,63], p9:[79,72], p10:[64,77], p11:[47,76], p12:[33,69],
+    c1:[49,47], c2:[68,45], c3:[59,61], c4:[39,55], c5:[78,57],
+    s1:[71,86], s2:[77,98]
+  };
+  const aristas = [
+    ['p1','p2'],['p2','p3'],['p3','p4'],['p4','p5'],['p5','p6'],['p6','p7'],
+    ['p7','p8'],['p8','p9'],['p9','p10'],['p10','p11'],['p11','p12'],['p12','p1'],
+    ['c1','p3'],['c1','p4'],['c1','c2'],['c2','p5'],['c2','p6'],
+    ['c3','c1'],['c3','c2'],['c3','p10'],
+    ['c4','p1'],['c4','p12'],['c4','c1'],
+    ['c5','p7'],['c5','p8'],['c5','c2'],['c5','c3'],
+    ['p10','s1'],['s1','s2']
+  ];
+  const borde = ['p1','p2','p3','p4','p5','p6','p7','p8','p9','p10','p11','p12'].map(k => N[k]);
+  const cx = borde.reduce((s,p) => s+p[0], 0) / borde.length;
+  const cy = borde.reduce((s,p) => s+p[1], 0) / borde.length;
+  const inflado = borde.map(([x,y]) => [cx + (x-cx)*1.16, cy + (y-cy)*1.16]);
+  const n = inflado.length;
+  let d = `M${inflado[0][0].toFixed(1)} ${inflado[0][1].toFixed(1)}`;
+  for(let i = 0; i < n; i++){
+    const p0 = inflado[(i-1+n)%n], p1 = inflado[i], p2 = inflado[(i+1)%n], p3 = inflado[(i+2)%n];
+    const b1 = [p1[0] + (p2[0]-p0[0])/6, p1[1] + (p2[1]-p0[1])/6];
+    const b2 = [p2[0] - (p3[0]-p1[0])/6, p2[1] - (p3[1]-p1[1])/6];
+    d += ` C${b1[0].toFixed(1)} ${b1[1].toFixed(1)}, ${b2[0].toFixed(1)} ${b2[1].toFixed(1)}, ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  const silueta = `<path d="${d}Z" fill="#E2F2EC" opacity=".16"/>`;
+  const dorados = ['c1','c3','c5','p4'];
+  const lineas = aristas.map(([a,b]) =>
+    `<line x1="${N[a][0]}" y1="${N[a][1]}" x2="${N[b][0]}" y2="${N[b][1]}"/>`).join('');
+  const nodos = Object.entries(N).map(([k,[x,y]]) => {
+    const oro = dorados.includes(k);
+    return `<circle cx="${x}" cy="${y}" r="${oro ? 3.4 : 2.5}" fill="${oro ? '#C9A227' : '#E2F2EC'}"/>`;
+  }).join('');
+  return `${silueta}
+    <g stroke="#E2F2EC" stroke-width="3" stroke-linecap="round" opacity=".62">${lineas}</g>
+    <g>${nodos}</g>`;
+}
+const PERFIL = `M55.9 0 C53.11 0.44, 43.15 1.74, 39.18 2.61 C35.21 3.48, 34.01 4.35, 32.08 5.22 C30.15 6.09, 28.93 6.97, 27.59 7.84 C26.25 8.71, 25.11 9.58, 24.03 10.45 C22.95 11.32, 21.91 12.19, 21.11 13.06 C20.31 13.93, 19.89 14.8, 19.23 15.67 C18.57 16.54, 17.72 17.42, 17.14 18.29 C16.57 19.16, 16.16 20.03, 15.78 20.9 C15.4 21.77, 15.15 22.64, 14.84 23.51 C14.53 24.38, 14.23 25.25, 13.9 26.12 C13.57 26.99, 13.22 27.87, 12.85 28.74 C12.48 29.61, 12.06 30.48, 11.7 31.35 C11.34 32.22, 10.97 33.09, 10.66 33.96 C10.35 34.83, 9.87 35.7, 9.82 36.57 C9.77 37.44, 10.1 38.31, 10.34 39.18 C10.58 40.05, 11.26 40.93, 11.29 41.8 C11.32 42.67, 11.04 43.54, 10.55 44.41 C10.06 45.28, 9.06 46.15, 8.36 47.02 C7.66 47.89, 6.98 48.76, 6.37 49.63 C5.76 50.5, 5.27 51.38, 4.7 52.25 C4.13 53.12, 3.59 53.99, 2.93 54.86 C2.27 55.73, 1.22 56.6, 0.73 57.47 C0.24 58.34, -0.09 59.21, 0 60.08 C0.09 60.95, 0.14 61.83, 1.25 62.7 C2.37 63.57, 5.58 64.44, 6.69 65.31 C7.81 66.18, 7.77 67.05, 7.94 67.92 C8.11 68.79, 7.8 69.66, 7.73 70.53 C7.66 71.4, 7.33 72.28, 7.52 73.15 C7.71 74.02, 8.74 74.89, 8.88 75.76 C9.02 76.63, 8.1 77.5, 8.36 78.37 C8.62 79.24, 9.96 80.11, 10.45 80.98 C10.94 81.85, 11.31 82.72, 11.29 83.59 C11.27 84.46, 10.53 85.34, 10.34 86.21 C10.15 87.08, 10.02 87.95, 10.14 88.82 C10.26 89.69, 10.52 90.56, 11.08 91.43 C11.64 92.3, 9.49 93.17, 13.48 94.04 C17.47 94.91, 31.33 95.79, 35.01 96.66 C38.68 97.53, 35.37 98.4, 35.53 99.27 C35.69 100.14, 35.74 101.01, 35.95 101.88 C36.16 102.75, 36.34 103.62, 36.78 104.49 C37.22 105.36, 38.07 106.24, 38.56 107.11 C39.05 107.98, 39.38 108.85, 39.71 109.72 C40.04 110.59, 40.26 111.46, 40.54 112.33 C40.82 113.2, 41.07 114.07, 41.38 114.94 C41.69 115.81, 42.25 117.12, 42.42 117.55 L61.23 117.55 C61.74 117.12, 58.42 115.81, 64.26 114.94 C70.1 114.07, 91.24 113.2, 96.24 112.33 C101.24 111.46, 94.98 110.59, 94.25 109.72 C93.52 108.85, 92.48 107.98, 91.85 107.11 C91.22 106.24, 90.98 105.36, 90.49 104.49 C90 103.62, 89.42 102.75, 88.92 101.88 C88.42 101.01, 87.84 100.14, 87.46 99.27 C87.08 98.4, 86.92 97.53, 86.62 96.66 C86.32 95.79, 85.92 94.91, 85.68 94.04 C85.44 93.17, 85.33 92.3, 85.16 91.43 C84.99 90.56, 84.74 89.69, 84.64 88.82 C84.54 87.95, 84.59 87.08, 84.54 86.21 C84.49 85.34, 84.4 84.46, 84.33 83.59 C84.26 82.72, 84.12 81.85, 84.12 80.98 C84.12 80.11, 84.23 79.24, 84.33 78.37 C84.43 77.5, 84.57 76.63, 84.74 75.76 C84.91 74.89, 85.14 74.02, 85.37 73.15 C85.6 72.28, 85.79 71.4, 86.1 70.53 C86.41 69.66, 86.8 68.79, 87.25 67.92 C87.7 67.05, 88.19 66.18, 88.82 65.31 C89.45 64.44, 90.36 63.57, 91.01 62.7 C91.66 61.83, 92.12 60.95, 92.69 60.08 C93.26 59.21, 93.9 58.34, 94.46 57.47 C95.02 56.6, 95.56 55.73, 96.03 54.86 C96.5 53.99, 96.92 53.12, 97.28 52.25 C97.64 51.38, 97.96 50.5, 98.22 49.63 C98.48 48.76, 98.64 47.89, 98.85 47.02 C99.06 46.15, 99.32 45.28, 99.48 44.41 C99.64 43.54, 99.72 42.67, 99.79 41.8 C99.86 40.93, 99.92 40.05, 99.9 39.18 C99.88 38.31, 99.76 37.44, 99.69 36.57 C99.62 35.7, 99.55 34.83, 99.48 33.96 C99.41 33.09, 99.43 32.22, 99.27 31.35 C99.11 30.48, 98.77 29.61, 98.54 28.74 C98.31 27.87, 98.19 26.99, 97.91 26.12 C97.63 25.25, 97.22 24.38, 96.87 23.51 C96.52 22.64, 96.2 21.77, 95.82 20.9 C95.44 20.03, 95.09 19.16, 94.57 18.29 C94.05 17.42, 93.37 16.54, 92.69 15.67 C92.01 14.8, 91.26 13.93, 90.49 13.06 C89.72 12.19, 89 11.32, 88.09 10.45 C87.18 9.58, 86.23 8.71, 85.06 7.84 C83.89 6.97, 82.74 6.09, 81.09 5.22 C79.44 4.35, 78.4 3.48, 75.13 2.61 C71.85 1.74, 63.72 0.44, 61.44 0 Z`;
+let CONTADOR_LOGO = 0;
+function LOGO(size = 78){
+  const CX = 54, CY = 32, RX = 32, RY = 11;
+  const orbita = ang => `<ellipse cx="${CX}" cy="${CY}" rx="${RX}" ry="${RY}"
+      transform="rotate(${ang} ${CX} ${CY})" fill="none" stroke="#E2F2EC" stroke-width="1.3" opacity=".4"/>`;
+  const electron = (ang, t) => {
+    const a = ang*Math.PI/180;
+    const x = CX + RX*Math.cos(t)*Math.cos(a) - RY*Math.sin(t)*Math.sin(a);
+    const y = CY + RX*Math.cos(t)*Math.sin(a) + RY*Math.sin(t)*Math.cos(a);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.1" fill="#C9A227"/>`;
+  };
+  const id = 'craneo' + (++CONTADOR_LOGO);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" role="img" aria-label="Mente Libre">
+    <defs><clipPath id="${id}"><path d="${PERFIL}"/></clipPath></defs>
+    <path d="${PERFIL}" fill="#0A5B46"/>
+    <g clip-path="url(#${id})">
+      ${orbita(0)}${orbita(60)}${orbita(120)}
+      <g transform="translate(6 -10.4) scale(.80)">${redNeuronal()}</g>
+      ${electron(0, 0)}${electron(60, Math.PI)}${electron(120, 0)}
+    </g>
+  </svg>`;
+}
+
+/* ---- Campana (de informe.html) ---- */
+function campanaSVG(indice){
+  const W = 320, H = 172, L = 14, Rg = 14, top = 16, base = H - 34;
+  const d0 = 55, d1 = 145, peak = base - top;
+  const clamp = v => Math.max(d0, Math.min(d1, v));
+  const ind = clamp(indice);
+  const xOf = v => L + (v - d0) / (d1 - d0) * (W - L - Rg);
+  const g = v => Math.exp(-Math.pow(v - 100, 2) / (2 * 15 * 15));
+  const yOf = v => base - g(v) * peak;
+  let curve = '', area = 'M' + xOf(d0).toFixed(1) + ' ' + base.toFixed(1);
+  for(let v = d0; v <= d1; v++){
+    curve += (v === d0 ? 'M' : 'L') + xOf(v).toFixed(1) + ' ' + yOf(v).toFixed(1) + ' ';
+    area  += ' L' + xOf(v).toFixed(1) + ' ' + yOf(v).toFixed(1);
+  }
+  area += ' L' + xOf(d1).toFixed(1) + ' ' + base.toFixed(1) + ' Z';
+  const ticks = [70,85,100,115,130].map(t =>
+    `<line x1="${xOf(t).toFixed(1)}" y1="${base}" x2="${xOf(t).toFixed(1)}" y2="${base+4}" stroke="#CBD5E1"/>`+
+    `<text x="${xOf(t).toFixed(1)}" y="${base+16}" text-anchor="middle" font-size="9" fill="#94A3B8">${t}</text>`).join('');
+  const mx = xOf(ind), my = yOf(ind);
+  const lblY = Math.min(Math.max(my - 30, 2), base - 42);
+  const id = 'cl' + Math.random().toString(36).slice(2,7);
+  const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tu posición en la distribución poblacional">
+    <defs>
+      <clipPath id="${id}"><rect class="cl-rect" x="${L}" y="0" width="0" height="${H}"/></clipPath>
+      <linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0E8A68" stop-opacity=".40"/>
+        <stop offset="1" stop-color="#0E8A68" stop-opacity=".04"/>
+      </linearGradient>
+    </defs>
+    <line x1="${L}" y1="${base}" x2="${W-Rg}" y2="${base}" stroke="#E2E8F0"/>
+    <path d="${area}" fill="url(#${id}g)" clip-path="url(#${id})"/>
+    <path d="${curve}" fill="none" stroke="#0A5B46" stroke-width="2.2" stroke-linejoin="round"/>
+    ${ticks}
+    <g class="marca-g" opacity="0">
+      <line x1="${mx.toFixed(1)}" y1="${base}" x2="${mx.toFixed(1)}" y2="${(my-1).toFixed(1)}" stroke="#C9A227" stroke-width="2.2" stroke-dasharray="3 2"/>
+      <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="5.5" fill="#C9A227" stroke="#fff" stroke-width="2"/>
+      <rect x="${(mx-31).toFixed(1)}" y="${lblY.toFixed(1)}" width="62" height="19" rx="9" fill="#0A5B46"/>
+      <text x="${mx.toFixed(1)}" y="${(lblY+13).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fff">Tú · ${indice}</text>
+    </g>
+  </svg>`;
+  return {svg, clipw:+(mx - L).toFixed(1)};
+}
+function animarCampana(el){
+  const svg = el.querySelector('svg'); if(!svg) return;
+  const rect = svg.querySelector('.cl-rect'), marca = svg.querySelector('.marca-g');
+  const target = +el.dataset.clipw, t0 = performance.now(), dur = 1100;
+  (function step(t){
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    rect.setAttribute('width', (target * e).toFixed(1));
+    marca.setAttribute('opacity', k > 0.55 ? ((k - 0.55) / 0.45).toFixed(2) : '0');
+    if(k < 1) requestAnimationFrame(step);
+  })(performance.now());
+}
+
+function ordenarRadar(radar){
+  const oo = n => ORDEN_OFICIAL.indexOf(n);
+  return [...radar].sort((a,b) =>
+      (b.porcentaje - a.porcentaje) || (b.pesoAcumulado - a.pesoAcumulado) || (oo(a.nombre) - oo(b.nombre)));
+}
+function interpretaNumero(indice){
+  if(indice < 80)  return 'Un <b>'+indice+'</b> entra en el rango «en desarrollo». El índice no cuenta aciertos: pondera la dificultad, y ahí está tu mayor margen de mejora.';
+  if(indice < 95)  return 'Un <b>'+indice+'</b> te sitúa en la franja media, donde se agrupa la mayoría. Tu perfil de fortalezas dice más de ti que el número solo.';
+  if(indice < 110) return 'Un <b>'+indice+'</b> ronda la media, pero con áreas que sobresalen del resto: ahí está lo interesante de tu perfil.';
+  if(indice < 120) return 'Un <b>'+indice+'</b> está por encima de la media: entraste con éxito en el terreno difícil del test, no solo en lo accesible.';
+  if(indice < 130) return 'Un <b>'+indice+'</b> es un resultado alto: sostienes de forma consistente los ejercicios de mayor peso.';
+  return 'Un <b>'+indice+'</b> es un resultado destacado: superas a casi toda la población resolviendo lo más difícil de forma consistente.';
+}
+/* Detalle del percentil / posición en la campana (adaptado al valor) */
+function explicaPercentil(p){
+  const base = `De cada 100 personas que hacen este test, quedas por delante de <b>${p}</b>.`;
+  let pos;
+  if(p <= 25)      pos = 'En la campana caes a la izquierda de la media: aquí el número por sí solo dice poco, y lo que de verdad te define es tu perfil por áreas.';
+  else if(p <= 69) pos = 'Caes cerca del centro de la curva, la zona más poblada, donde se agrupa la mayoría. Dos personas con tu mismo percentil pueden tener perfiles muy distintos: por eso pesan tus fortalezas, no solo el total.';
+  else if(p <= 89) pos = 'Te ubicas a la derecha de la media, en la zona alta de la curva, donde ya hay bastante menos gente que tú.';
+  else             pos = 'Estás en el extremo derecho de la campana, la zona más rara: muy pocas personas llegan hasta aquí.';
+  return `${base} ${pos} La <b>línea dorada</b> marca tu lugar exacto en la curva.`;
+}
+
+/* Pantalla del resultado (tripwire robusto) */
+function pantallaResultado(r){
+  const f3 = ordenarRadar(r.radar).slice(0, 3);
+  const top = f3[0];
+  const camp = campanaSVG(r.indice);
+  const fortHTML = f3.map((d, idx) => {
+    const f = FORT[d.nombre] || {};
+    return `<div class="fort">
+      <div class="f-head">
+        <span class="ic">${ICONO[d.nombre]||'⭐'}</span>
+        <span class="nom">${idx+1}. ${esc(d.nombre)}</span>
+        <span class="pct">${d.ok}/8 · ${fmtPct(d.porcentaje)}%</span>
+      </div>
+      <div class="f-row"><b>Qué es:</b> ${esc(f.que||'')}</div>
+      <div class="f-row"><b>Cómo se nota en ti:</b> ${esc(f.notas||'')}</div>
+      <div class="f-row"><b>Dónde te da ventaja:</b> ${esc(f.ventaja||'')}</div>
+    </div>`;
+  }).join('');
+  const tips = f3.map(d => `<li>${esc(FORT[d.nombre]?.tip||'')}</li>`).join('');
+  app.innerHTML = `<div class="card centro">
+    <div class="logo">${LOGO()}</div>
+    <h1 class="j">Tu resultado</h1>
+    <p>Esto es lo que dice tu evaluación cognitiva.</p>
+    <div class="coef">
+      <div class="lbl">Tu coeficiente</div>
+      <div class="num">${r.indice}</div>
+      <div class="pill">Más listo que el ${r.percentil}%</div>
+    </div>
+    <div class="num-int">${interpretaNumero(r.indice)}</div>
+    <div class="campana" data-clipw="${camp.clipw}">${camp.svg}</div>
+    <div class="cap">Superas al <b>${r.percentil}%</b> de la población</div>
+    <div class="perc-det">${explicaPercentil(r.percentil)}</div>
+
+    <div class="sec">
+      <div class="sec-tit">Qué significa (y qué no) tu número</div>
+      <ul class="lista">
+        <li>No es una nota ni un veredicto: es una foto de <b>cómo razonas hoy</b>, en un formato concreto.</li>
+        <li>El índice no cuenta aciertos, los <b>pondera</b>: los ejercicios difíciles pesan hasta 2,5× más.</li>
+        <li>En los extremos, la escala es menos precisa; léelo como la <b>dirección</b> de tu perfil, no como una medida exacta.</li>
+      </ul>
+    </div>
+
+    <div class="fort-tit">Tus 3 fortalezas cognitivas dominantes</div>
+    ${fortHTML}
+    <p class="nota-inf">📘 En tu <b>informe completo</b> encontrarás, para cada área, <b>ejercicios y ejemplos concretos</b> para desarrollarla.</p>
+
+    <div class="spot">
+      <div class="spot-tit">⭐ Tu fortaleza principal en acción</div>
+      <p><b>${esc(top.nombre)}.</b> ${esc(FORT[top.nombre]?.accion||'')}</p>
+    </div>
+
+    <div class="sec">
+      <div class="sec-tit">Cómo sacarles provecho</div>
+      <ul class="lista">${tips}</ul>
+      <p class="nota-inf">👉 En el informe, cada fortaleza trae un <b>ejemplo resuelto</b> para entrenarla.</p>
+    </div>
+
+    <div class="cta">
+      <div class="cta-tit">🔓 Tu Informe Cognitivo Completo</div>
+      <p class="cta-p">Este es solo un resumen. Tu <b>informe completo tiene 15 páginas de análisis a
+        fondo</b> de tus <b>5 áreas</b> (Abstracto, Lógico, Patrones, Cuantitativo y Espacial), tus
+        <b>puntos ciegos</b> y cómo trabajarlos, tu <b>estilo de pensamiento</b> y un <b>PDF
+        descargable</b>.</p>
+      <div class="cta-precio"><span class="antes">antes $19</span> <b>hoy solo $8</b></div>
+      <a class="btn oro" href="${URL_INFORME || '#'}">Quiero mi informe completo →</a>
+    </div>
+  </div>`;
+  const cel = app.querySelector('.campana'); if(cel) animarCampana(cel);
+}
+
+/* Pide el email de compra */
+function pantallaPedirEmail(mensaje){
+  app.innerHTML = `<div class="card centro">
+    <div class="logo">${LOGO()}</div>
+    <h1>Tu resultado</h1>
+    <p>Escribe el <b>correo que usaste al comprar</b> para desbloquear tu resultado.</p>
+    ${mensaje ? `<p class="nota" style="color:#B45309">${esc(mensaje)}</p>` : ''}
+    <div style="margin:1.1rem 0 .3rem;text-align:left">
+      <input class="inp" type="email" id="email-ver" placeholder="tucorreo@ejemplo.com"
+        autocomplete="email" inputmode="email">
+      <div class="msg" id="email-msg"></div>
+    </div>
+    <button class="btn" id="ver">Ver mi resultado</button>
+  </div>`;
+  const inp = document.querySelector('#email-ver');
+  try { const g = localStorage.getItem('emailInforme'); if(g) inp.value = g; } catch(e){}
+  document.querySelector('#ver').onclick = () => {
+    const email = (inp.value||'').trim().toLowerCase();
+    const msg = document.querySelector('#email-msg');
+    if(!email || !email.includes('@') || !email.includes('.')){
+      msg.textContent = 'Escribe un correo válido.'; msg.style.display='block'; inp.focus(); return;
+    }
+    desbloquearPorEmail(email, false);
+  };
+}
+
+/* Verifica el pago en Supabase (mismo endpoint que el informe) */
+async function desbloquearPorEmail(email, auto){
+  const cargando = (m) => { app.innerHTML = `<div class="card centro"><div class="logo">${LOGO()}</div>
+    <h1>Verificando tu compra…</h1><p>${m||'Un momento, preparando tu resultado.'}</p></div>`; };
+  cargando();
+  const intentos = auto ? 7 : 1;
+  let huboError = false;
+  for(let i=0; i<intentos; i++){
+    let data = null;
+    try {
+      const res = await fetch(SUPABASE_FN + '/verificar', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      });
+      data = await res.json();
+    } catch(e){ data = null; huboError = true; }
+
+    if(data && data.pagado){
+      try { localStorage.setItem('emailInforme', email); } catch(e){}
+      let r = data.resultado;
+      if(!r || !r.completado){
+        try {
+          const g = JSON.parse(localStorage.getItem('resultadoTestIQ'));
+          if(g && g.completado){
+            r = g;
+            fetch(SUPABASE_FN + '/guardar-resultado', {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ email, resultado: g })
+            }).catch(()=>{});
+          }
+        } catch(e){}
+      }
+      if(r){ pantallaResultado(r); return; }
+      pantallaPedirEmail('Tu compra está confirmada 👍. Ábrelo en el mismo navegador donde hiciste el test (ahí quedó guardado tu resultado).');
+      return;
+    }
+    if(data){ huboError = false; }
+    if(i < intentos - 1){
+      cargando('Confirmando tu compra, puede tardar unos segundos…');
+      await new Promise(r => setTimeout(r, 3000));
+    }
+  }
+  if(huboError){ pantallaPedirEmail('No pudimos conectar. Revisa tu internet e inténtalo de nuevo.'); return; }
+  pantallaPedirEmail(auto ? '' : 'No encontramos una compra con ese correo. Usa el mismo correo con el que pagaste.');
+}
+
+/* Arranque */
+(function init(){
+  const params = new URLSearchParams(location.search);
+  const hash = (location.hash||'').replace(/^#/,'');
+  if(params.get('demo') === '1' || hash === 'demo'){
+    pantallaResultado({indice:130, percentil:98, radar:[
+      {nombre:'Razonamiento Lógico',porcentaje:99,pesoAcumulado:12,ok:8},
+      {nombre:'Razonamiento Abstracto',porcentaje:98,pesoAcumulado:11,ok:8},
+      {nombre:'Razonamiento Cuantitativo',porcentaje:88,pesoAcumulado:10,ok:7},
+      {nombre:'Reconocimiento de Patrones',porcentaje:75,pesoAcumulado:9,ok:6},
+      {nombre:'Visualización Espacial',porcentaje:63,pesoAcumulado:8,ok:5}
+    ]});
+    return;
+  }
+  const emailURL = (params.get('email')||'').trim().toLowerCase();
+  const conClave = params.get('ver') === 'resultados' && params.get('clave') === CLAVE_REVISION;
+  if(conClave){
+    try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado){ pantallaResultado(g); return; } } catch(e){}
+  }
+  if(emailURL){ desbloquearPorEmail(emailURL, true); return; }
+  let saved = null;
+  try { saved = localStorage.getItem('emailInforme'); } catch(e){}
+  if(saved){ desbloquearPorEmail(saved, true); return; }
+  pantallaPedirEmail();
+})();
+</script>
+</body>
+</html>
