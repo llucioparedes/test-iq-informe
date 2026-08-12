@@ -426,6 +426,43 @@ function pantallaResultado(r){
   if(btnInforme) btnInforme.addEventListener('click', avisarInicioDePago);
 }
 
+/* 📧 Captura del correo ANTES de enseñar el resultado gratis.
+   Sin esto, quien hace el test y no compra se pierde para siempre: no queda
+   forma de volver a hablarle. El correo se guarda junto con su resultado. */
+function pantallaCapturarEmail(r){
+  app.innerHTML = `<div class="card centro">
+    <div class="logo">${LOGO()}</div>
+    <h1 class="j">Tu resultado está listo</h1>
+    <p>Escribe tu correo y te mostramos <b>tu coeficiente, tu percentil y tus 3 fortalezas cognitivas</b>.</p>
+    <div style="margin:1.1rem 0 .3rem;text-align:left">
+      <input class="inp" type="email" id="email-lead" placeholder="tucorreo@ejemplo.com"
+        autocomplete="email" inputmode="email">
+      <div class="msg" id="lead-msg"></div>
+    </div>
+    <button class="btn" id="ver-lead">Ver mi resultado →</button>
+    <p class="nota" style="margin-top:.9rem">Es gratis. No compartimos tu correo con nadie.</p>
+  </div>`;
+  const inp = document.querySelector('#email-lead');
+  const mostrar = () => {
+    const email = (inp.value||'').trim().toLowerCase();
+    const msg = document.querySelector('#lead-msg');
+    if(!email || !email.includes('@') || !email.includes('.')){
+      msg.textContent = 'Escribe un correo válido.'; msg.style.display='block'; inp.focus(); return;
+    }
+    try { localStorage.setItem('emailInforme', email); } catch(e){}
+    // Se guarda en segundo plano: si falla la red, igual ve su resultado.
+    fetch(SUPABASE_FN + '/guardar-resultado', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, resultado: r })
+    }).catch(()=>{});
+    if(typeof fbq === 'function') fbq('track', 'Lead');
+    pantallaResultado(r);
+  };
+  document.querySelector('#ver-lead').onclick = mostrar;
+  inp.addEventListener('keydown', e => { if(e.key === 'Enter') mostrar(); });
+  inp.focus();
+}
+
 /* Pide el email de compra */
 function pantallaPedirEmail(mensaje){
   app.innerHTML = `<div class="card centro">
@@ -518,9 +555,19 @@ async function desbloquearPorEmail(email, auto){
     try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado){ pantallaResultado(g); return; } } catch(e){}
   }
   /* MODELO B: el test es gratis. Si hay un resultado local (recién hecho el test
-     en este navegador) se muestra GRATIS de inmediato. La verificación por email
-     queda de respaldo para quien vuelva desde otro dispositivo. */
-  try { const g = JSON.parse(localStorage.getItem('resultadoTestIQ')); if(g && g.completado){ pantallaResultado(g); return; } } catch(e){}
+     en este navegador) se muestra GRATIS, pero PIDIENDO EL CORREO ANTES: sin eso
+     la persona se va sin dejar rastro. Si ya dio su correo antes, no se le
+     vuelve a pedir. La verificación por email queda de respaldo para quien
+     vuelva desde otro dispositivo. */
+  try {
+    const g = JSON.parse(localStorage.getItem('resultadoTestIQ'));
+    if(g && g.completado){
+      let yaDioCorreo = null;
+      try { yaDioCorreo = localStorage.getItem('emailInforme'); } catch(e){}
+      if(yaDioCorreo) pantallaResultado(g); else pantallaCapturarEmail(g);
+      return;
+    }
+  } catch(e){}
   if(emailURL){ desbloquearPorEmail(emailURL, true); return; }
   let saved = null;
   try { saved = localStorage.getItem('emailInforme'); } catch(e){}
