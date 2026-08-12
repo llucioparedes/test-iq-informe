@@ -4,6 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tu resultado cognitivo</title>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1406010940528500');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1406010940528500&ev=PageView&noscript=1"/></noscript>
+<!-- End Meta Pixel Code -->
 <style>
   :root{
     --jade:#0E8A68; --jade-osc:#0A5B46; --jade-cl:#E2F2EC;
@@ -113,6 +129,24 @@ const CLAVE_REVISION = 'mente2026';
    que ya usaba el test (G1068884863O). Si creas una OFERTA NUEVA a $8 en Hotmart,
    el código '?off=' cambia y hay que actualizar este link. */
 const URL_INFORME = 'https://pay.hotmart.com/G1068884863O?off=f9rtv690&checkoutMode=10';
+
+/* 💰 Precio y moneda del informe. Se le mandan a Meta junto al aviso de
+   "inició el pago" (Hotmart no los envía). ⚠️ Si cambias el precio en Hotmart,
+   cambia también ESTE número y el texto visible de la oferta. */
+const PRECIO_INFORME = 8.00;
+const MONEDA_INFORME = 'USD';
+
+/* Avisa a Meta que esta persona arrancó el pago, con precio y moneda. */
+function avisarInicioDePago(){
+  if(typeof fbq !== 'function') return;
+  fbq('track', 'InitiateCheckout', {
+    value: PRECIO_INFORME,
+    currency: MONEDA_INFORME,
+    content_name: 'Informe Cognitivo Completo',
+    content_type: 'product',
+    num_items: 1
+  });
+}
 const app = document.getElementById('app');
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtPct = p => Math.round(p);
@@ -384,10 +418,12 @@ function pantallaResultado(r){
         día, tus <b>puntos ciegos</b> y <b>ejercicios concretos</b> para desarrollarla. Además: tu
         <b>estilo de pensamiento</b> global y un <b>PDF descargable</b>.</p>
       <div class="cta-precio"><span class="antes">antes $19</span> <b>hoy solo $8</b></div>
-      <a class="btn oro" href="${URL_INFORME || '#'}">Quiero mi informe completo →</a>
+      <a class="btn oro" id="ir-informe" href="${URL_INFORME || '#'}">Quiero mi informe completo →</a>
     </div>
   </div>`;
   const cel = app.querySelector('.campana'); if(cel) animarCampana(cel);
+  const btnInforme = app.querySelector('#ir-informe');
+  if(btnInforme) btnInforme.addEventListener('click', avisarInicioDePago);
 }
 
 /* Pide el email de compra */
