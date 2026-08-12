@@ -555,6 +555,17 @@ const URL_CHECKOUT = 'https://pay.hotmart.com/G1068884863O?off=f9rtv690&checkout
 /* Clave para revisar el informe sin pagar (ver el arranque, al final) */
 const CLAVE_REVISION = 'mente2026';
 
+/* 📊 Hitos del test para Meta: sirven para ver en qué pregunta abandona la
+   gente. Cada hito se manda UNA sola vez por visita (si no, el contador se
+   dispararía al volver atrás). Son eventos personalizados; aparecen en
+   Administrador de eventos con estos mismos nombres. */
+const HITOS_ENVIADOS = new Set();
+function marcarHito(nombre){
+  if(HITOS_ENVIADOS.has(nombre)) return;
+  HITOS_ENVIADOS.add(nombre);
+  if(typeof fbq === 'function') fbq('trackCustom', nombre);
+}
+
 const ir = fn => { fn(); window.scrollTo({top:0, behavior:'smooth'}); };
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -1156,6 +1167,13 @@ function pantallaPregunta(){
   const idx = ORDEN[actual];
   const p = PREGUNTAS[idx];
   contestada = false;
+
+  // Hitos de abandono: arranque y cada 10 preguntas.
+  if(actual === 0)       marcarHito('Test_Inicio');
+  else if(actual === 9)  marcarHito('Test_P10');
+  else if(actual === 19) marcarHito('Test_P20');
+  else if(actual === 29) marcarHito('Test_P30');
+
   const pct = (actual / PREGUNTAS.length) * 100;
   // La insignia muestra la dimensión oficial de la pregunta (por índice),
   // no la etiqueta cruda del banco: sus emojis desentonaban con la portada
@@ -1228,6 +1246,7 @@ function pantallaPregunta(){
    Para revisarlos sin pagar: ?ver=resultados&clave=mente2026
 ============================================================ */
 function pantallaPuente(){
+  marcarHito('Test_Completado');
   const r = calcularResultado();
   try { localStorage.setItem('resultadoTestIQ', JSON.stringify(r)); } catch(e){}
 
